@@ -1,0 +1,9 @@
+Child process exited with status 0
+Remove trailing newline
+Read home is $HOME from testfile.txt
+execv /bin/echo home is $HOME returned home is $HOME
+/home/richard/assignment-1-rafaelalvarezm61/assignment-autotest/test/assignment3/Test_systemcalls.c:72:test_exec_redirect_calls:PASS
+
+-----------------------
+3 Tests 2 Failures 0 Ignored 
+FAIL

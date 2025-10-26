@@ -1,4 +1,8 @@
 #include "systemcalls.h"
+#include "stdlib.h"
+#include "unistd.h"
+#include "stdio.h"
+#include "sys/wait.h"
 
 /**
  * @param cmd the command to execute with system()
@@ -16,7 +20,14 @@ bool do_system(const char *cmd)
  *   and return a boolean true if the system() call completed with success
  *   or false() if it returned a failure
 */
-
+	int status = system(cmd);
+	
+	if (status == 0) {
+		return false;
+	}
+	else {
+		return true;
+	}
     return true;
 }
 
@@ -58,7 +69,31 @@ bool do_exec(int count, ...)
  *   as second argument to the execv() command.
  *
 */
+	
+	pid_t pid;
+    int status;
 
+    pid = fork();
+
+    if (pid == -1) {
+        perror("fork failed");
+        exit(EXIT_FAILURE);
+    } else if (pid == 0) { // Child process
+        if (execv(command[0], command) == -1) {
+            perror("execv failed");
+            exit(EXIT_FAILURE); // Child exits on execv failure
+        }
+    } else { // Parent process
+        if (wait(&status) == -1) {
+            perror("wait failed");
+            exit(EXIT_FAILURE);
+        }
+        if (WIFEXITED(status)) {
+            printf("Child process exited with status %d\n", WEXITSTATUS(status));
+        } else {
+            printf("Child process did not exit normally.\n");
+        }
+    }
     va_end(args);
 
     return true;
@@ -92,6 +127,39 @@ bool do_exec_redirect(const char *outputfile, int count, ...)
  *   The rest of the behaviour is same as do_exec()
  *
 */
+	
+	pid_t pid;
+    int status;
+
+    pid = fork();
+	
+	if (freopen(outputfile, "w", stdout) == NULL) {
+        perror("freopen failed"); // Print an error message if redirection fails
+        exit(EXIT_FAILURE);
+    }
+
+    if (pid == -1) {
+        perror("fork failed");
+	fprintf(stdout,"fork failed\n");
+        exit(EXIT_FAILURE);
+    } else if (pid == 0) { // Child process
+        if (execvp(command[0], command) == -1) {
+            perror("execvp failed");
+	    fprintf(stdout,"execvp failed\n");
+            exit(EXIT_FAILURE); // Child exits on execv failure
+        }
+    } else { // Parent process
+        if (wait(&status) == -1) {
+            perror("wait failed");
+	    fprintf(stdout,"wait failed\n");
+            exit(EXIT_FAILURE);
+        }
+        if (WIFEXITED(status)) {
+            printf("Child process exited with status %d\n", WEXITSTATUS(status));
+        }  else {
+            printf("Child process did not exit normally.\n");
+        }
+    }
 
     va_end(args);
 
