@@ -21,7 +21,13 @@ else
 	echo "Using passed directory ${OUTDIR} for output"
 fi
 
-mkdir -p ${OUTDIR}
+if [ -d ${OUTDIR} ]; then
+	echo "directory exists"
+else
+	echo "Directory does not exists."
+	mkdir -p ${OUTDIR}
+fi
+
 
 cd "$OUTDIR"
 if [ ! -d "${OUTDIR}/linux-stable" ]; then
@@ -35,6 +41,9 @@ if [ ! -e ${OUTDIR}/linux-stable/arch/${ARCH}/boot/Image ]; then
     git checkout ${KERNEL_VERSION}
 
     # TODO: Add your kernel build steps here
+	make -j$(nproc)
+	sudo make modules_install
+	sudo make install
 fi
 
 echo "Adding the Image in outdir"
